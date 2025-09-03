@@ -41,6 +41,7 @@ Parameters:
 * `Image1` (required) – First image (left side initially visible)
 * `Image2` (required) – Second image (revealed when sliding)
 * `width` (optional) – Max container width (e.g. `900px`, `600px`, `100%`). Defaults to auto (full width of parent).
+* `orientation` (optional) – `vertical` (default; vertical divider moving left/right) or `horizontal` (horizontal divider moving up/down).
 
 If an image can't be resolved an inline error plus tracking category is added.
 

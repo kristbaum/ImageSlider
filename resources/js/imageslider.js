@@ -10,6 +10,7 @@
     var $before = $wrapper.find( 'img.before' );
     var $after = $wrapper.find( 'img.after' );
         var $handle = $wrapper.find( '.mw-imageslider-handle' );
+        var orientation = ($wrapper.closest('.mw-imageslider').data('orientation') || 'vertical');
         if ( !$before.length || !$after.length ) return;
 
         // Wrap images for clipping
@@ -29,29 +30,40 @@
                 var targetHeight = Math.round( ( naturalHeight / naturalWidth ) * w );
                 $wrapper.css( { height: targetHeight + 'px' } );
             }
-            var clipX = Math.round( w * position );
-            // Full width layers; only clip-path / mask reveals portion. Use CSS var for paint efficiency.
-            $wrapper[0].style.setProperty( '--imageslider-reveal', clipX + 'px' );
-            $handle.css( { left: clipX + 'px' } );
+            if ( orientation === 'horizontal' ) {
+                var h = $wrapper.height();
+                var clipY = Math.round( h * position );
+                $wrapper[0].style.setProperty( '--imageslider-reveal', clipY + 'px' );
+                $handle.css( { top: clipY + 'px', left: '' } );
+            } else {
+                var clipX = Math.round( w * position );
+                $wrapper[0].style.setProperty( '--imageslider-reveal', clipX + 'px' );
+                $handle.css( { left: clipX + 'px', top: '' } );
+            }
             $handle.attr( 'aria-valuenow', Math.round( position * 100 ) );
         }
 
-        function setPositionFromEvent( e ) {
+        function setPositionFromPointer( pageX, pageY ) {
             var off = $wrapper.offset();
-            var x = e.pageX - off.left;
-            var w = $wrapper.width();
-            position = Math.min( 1, Math.max( 0, x / w ) );
+            if ( orientation === 'horizontal' ) {
+                var h = $wrapper.height();
+                position = Math.min( 1, Math.max( 0, ( pageY - off.top ) / h ) );
+            } else {
+                var w = $wrapper.width();
+                position = Math.min( 1, Math.max( 0, ( pageX - off.left ) / w ) );
+            }
             layout();
         }
 
         function startDrag( e ) {
             e.preventDefault();
             $( document ).on( 'mousemove.imageslider touchmove.imageslider', function ( ev ) {
-                var pageX = ev.pageX;
+                var pageX = ev.pageX, pageY = ev.pageY;
                 if ( ev.originalEvent.touches && ev.originalEvent.touches[0] ) {
                     pageX = ev.originalEvent.touches[0].pageX;
+                    pageY = ev.originalEvent.touches[0].pageY;
                 }
-                setPositionFromEvent( { pageX: pageX } );
+                setPositionFromPointer( pageX, pageY );
             } ).on( 'mouseup.imageslider touchend.imageslider touchcancel.imageslider', function () {
                 $( document ).off( '.imageslider' );
             } );
@@ -61,29 +73,25 @@
         $handle.on( 'touchstart', startDrag );
         // Allow click / tap anywhere on wrapper to reposition instantly
         $wrapper.on( 'click', function ( e ) {
-            // Ignore direct clicks on handle (drag already handles)
             if ( $( e.target ).closest( '.mw-imageslider-handle' ).length ) { return; }
             var off = $wrapper.offset();
-            var x = e.pageX - off.left;
-            var w = $wrapper.width();
-            position = Math.min( 1, Math.max( 0, x / w ) );
+            if ( orientation === 'horizontal' ) {
+                var h = $wrapper.height();
+                position = Math.min( 1, Math.max( 0, ( e.pageY - off.top ) / h ) );
+            } else {
+                var w = $wrapper.width();
+                position = Math.min( 1, Math.max( 0, ( e.pageX - off.left ) / w ) );
+            }
             layout();
         } );
 
         $handle.on( 'keydown', function ( e ) {
-            if ( e.key === 'ArrowLeft' || e.key === 'ArrowDown' ) {
-                position = Math.max( 0, position - 0.02 );
-                layout();
-                e.preventDefault();
-            } else if ( e.key === 'ArrowRight' || e.key === 'ArrowUp' ) {
-                position = Math.min( 1, position + 0.02 );
-                layout();
-                e.preventDefault();
-            } else if ( e.key === 'Home' ) {
-                position = 0; layout(); e.preventDefault();
-            } else if ( e.key === 'End' ) {
-                position = 1; layout(); e.preventDefault();
-            }
+            var decKeys = orientation === 'horizontal' ? [ 'ArrowUp', 'ArrowLeft' ] : [ 'ArrowLeft', 'ArrowDown' ];
+            var incKeys = orientation === 'horizontal' ? [ 'ArrowDown', 'ArrowRight' ] : [ 'ArrowRight', 'ArrowUp' ];
+            if ( decKeys.includes( e.key ) ) { position = Math.max( 0, position - 0.02 ); layout(); e.preventDefault(); }
+            else if ( incKeys.includes( e.key ) ) { position = Math.min( 1, position + 0.02 ); layout(); e.preventDefault(); }
+            else if ( e.key === 'Home' ) { position = 0; layout(); e.preventDefault(); }
+            else if ( e.key === 'End' ) { position = 1; layout(); e.preventDefault(); }
         } );
 
         // Re-layout on window resize

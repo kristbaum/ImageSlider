@@ -25,6 +25,8 @@ class Hooks {
     $file1Name = $named['Image1'] ?? $named['image1'] ?? null;
     $file2Name = $named['Image2'] ?? $named['image2'] ?? null;
         $width = $named['width'] ?? 'auto';
+        $orientation = strtolower( $named['orientation'] ?? $named['mode'] ?? 'vertical' );
+        if ( !in_array( $orientation, [ 'vertical', 'horizontal' ], true ) ) { $orientation = 'vertical'; }
 
         if ( !$file1Name || !$file2Name ) {
             // Fallback: treat any values starting with File: as positional in order
@@ -74,11 +76,13 @@ class Hooks {
         }
         $imgCommon = [ 'alt' => '' ];
         if ( $pixelWidthAttr ) { $imgCommon['width'] = rtrim( $pixelWidthAttr, 'px' ); }
-        $html = $htmlClass::rawElement( 'div', [ 'class' => 'mw-imageslider', 'style' => $containerStyle ],
+        $outerClasses = 'mw-imageslider mw-imageslider-' . $orientation;
+        $ariaOrientation = $orientation === 'vertical' ? 'horizontal' : 'vertical';
+        $html = $htmlClass::rawElement( 'div', [ 'class' => $outerClasses, 'style' => $containerStyle, 'data-orientation' => $orientation ],
             $htmlClass::rawElement( 'div', [ 'class' => 'mw-imageslider-wrapper', 'data-width' => $width ],
                 $htmlClass::element( 'img', $imgCommon + [ 'class' => 'mw-imageslider-img before', 'src' => $fileUrl1 ] ) .
                 $htmlClass::element( 'img', $imgCommon + [ 'class' => 'mw-imageslider-img after', 'src' => $fileUrl2 ] ) .
-                $htmlClass::rawElement( 'div', [ 'class' => 'mw-imageslider-handle', 'role' => 'slider', 'tabindex' => '0', 'aria-label' => 'Drag to compare', 'aria-valuemin' => '0', 'aria-valuemax' => '100', 'aria-valuenow' => '50' ], '<span class="mw-imageslider-grip"></span>' )
+                $htmlClass::rawElement( 'div', [ 'class' => 'mw-imageslider-handle', 'role' => 'slider', 'tabindex' => '0', 'aria-label' => 'Drag to compare', 'aria-orientation' => $ariaOrientation, 'aria-valuemin' => '0', 'aria-valuemax' => '100', 'aria-valuenow' => '50' ], '<span class="mw-imageslider-grip"></span>' )
             )
         );
 
