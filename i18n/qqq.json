@@ -1,0 +1,12 @@
+{
+    "@metadata": {
+        "authors": [
+            "Mark Muzenhardt",
+            "Kristbaum"
+        ]
+    },
+    "imageslider-desc": "Extension description shown on Special:Version.",
+    "imageslider-missing-param": "Error when required parameters are missing. Required params: Image1, Image2.",
+    "imageslider-missing-file": "Error when a referenced file cannot be resolved.",
+    "imageslider-tracking-category": "Tracking category name for pages with errors in ImageSlider usage."
+}

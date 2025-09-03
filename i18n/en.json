@@ -1,0 +1,12 @@
+{
+    "@metadata": {
+        "authors": [
+            "Mark Muzenhardt",
+            "Kristbaum"
+        ]
+    },
+    "imageslider-desc": "Adds a before/after image comparison slider parser function {{#imageslider:}}.",
+    "imageslider-missing-param": "ImageSlider: parameters 'Image1' and 'Image2' are required.",
+    "imageslider-missing-file": "ImageSlider: one or both files could not be found.",
+    "imageslider-tracking-category": "Pages with ImageSlider errors"
+}

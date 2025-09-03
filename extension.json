@@ -1,0 +1,45 @@
+{
+  "name": "ImageSlider",
+  "version": "0.1.0",
+  "author": ["Mark Muzenhardt","Kristbaum"],
+  "url": "https://example.org/",
+  "descriptionmsg": "imageslider-desc",
+  "license-name": "MIT",
+  "type": "parserhook",
+  "requires": {
+    "MediaWiki": ">= 1.35"
+  },
+  "AutoloadNamespaces": {
+    "ImageSlider\\": "includes/"
+  },
+  "Hooks": {
+    "ParserFirstCallInit": "ImageSlider\\Hooks::onParserFirstCallInit"
+  },
+  "ResourceModules": {
+    "ext.ImageSlider": {
+      "localBasePath": "resources",
+      "remoteExtPath": "extensions/ImageSlider/resources",
+      "scripts": [
+        "js/imageslider.js"
+      ],
+      "styles": [
+        "css/imageslider.css"
+      ],
+      "dependencies": [
+        "mediawiki.util"
+      ],
+      "targets": ["desktop", "mobile"]
+    }
+  },
+  "MessagesDirs": {
+    "ImageSlider": ["i18n"]
+  },
+  "ExtensionMessagesFiles": {
+    "ImageSliderMagic": "ImageSlider.i18n.magic.php"
+  },
+  "TrackingCategories": [
+    "imageslider-tracking-category"
+  ],
+  "manifest_version": 2
+}
+
