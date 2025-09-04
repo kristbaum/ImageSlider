@@ -4,10 +4,10 @@
   "author": ["Mark Muzenhardt","Kristbaum"],
   "url": "https://example.org/",
   "descriptionmsg": "imageslider-desc",
-  "license-name": "MIT",
+  "license-name": "GPLv3",
   "type": "parserhook",
   "requires": {
-    "MediaWiki": ">= 1.35"
+    "MediaWiki": ">= 1.39"
   },
   "AutoloadNamespaces": {
     "ImageSlider\\": "includes/"
