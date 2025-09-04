@@ -116,7 +116,7 @@
 
 /* Vertical arrows */
 .mw-imageslider-vertical .mw-imageslider-grip:before {
-    left: 11px;
+    right: 25px;
     top: 50%;
     margin-top: -10px;
     border-top: 10px solid transparent;
@@ -125,7 +125,7 @@
 }
 
 .mw-imageslider-vertical .mw-imageslider-grip:after {
-    right: 11px;
+    left: 25px;
     top: 50%;
     margin-top: -10px;
     border-top: 10px solid transparent;
