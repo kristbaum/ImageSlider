@@ -70,7 +70,7 @@
     top: 0;
     height: 100%;
     width: var(--imageslider-bar-thickness);
-    background: rgba(255, 255, 255, .9);
+    background: transparent; /* bar rendered via pseudo elements to avoid showing through grip */
     box-shadow: 0 0 6px rgba(0, 0, 0, .4);
     cursor: ew-resize;
     display: flex;
@@ -79,6 +79,18 @@
     backdrop-filter: blur(2px);
     z-index: 3;
 }
+
+/* Vertical bar segments (top/bottom) skipping the grip circle */
+.mw-imageslider-vertical .mw-imageslider-handle::before,
+.mw-imageslider-vertical .mw-imageslider-handle::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    width: var(--imageslider-bar-thickness);
+    background: rgba(255, 255, 255, .9);
+}
+.mw-imageslider-vertical .mw-imageslider-handle::before { top: 0; height: calc(50% - (var(--imageslider-grip-size) * 0.5)); }
+.mw-imageslider-vertical .mw-imageslider-handle::after { bottom: 0; height: calc(50% - (var(--imageslider-grip-size) * 0.5)); }
 
 /* Horizontal orientation: vertical clip */
 .mw-imageslider-horizontal .mw-imageslider-after {
@@ -93,15 +105,30 @@
     cursor: ns-resize;
 }
 
+/* Horizontal bar segments (left/right) skipping the grip circle */
+.mw-imageslider-horizontal .mw-imageslider-handle::before,
+.mw-imageslider-horizontal .mw-imageslider-handle::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    height: var(--imageslider-bar-thickness);
+    background: rgba(255, 255, 255, .9);
+}
+.mw-imageslider-horizontal .mw-imageslider-handle::before { left: 0; width: calc(50% - (var(--imageslider-grip-size) * 0.5)); }
+.mw-imageslider-horizontal .mw-imageslider-handle::after { right: 0; width: calc(50% - (var(--imageslider-grip-size) * 0.5)); }
+
 /* Grip (draggable knob) */
 .mw-imageslider-grip {
     display: block;
     width: var(--imageslider-grip-size);
     height: var(--imageslider-grip-size);
-    background: linear-gradient(135deg, #fff, #f1f1f1);
+    background: transparent;
+    /* transparent interior */
     border-radius: 50%;
-    border: 3px solid rgba(0, 0, 0, .12);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, .25), 0 0 0 1px rgba(255, 255, 255, .4) inset;
+    border: 3px solid rgba(255, 255, 255, .85);
+    /* visible outline */
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, .35), 0 2px 6px rgba(0, 0, 0, .30);
+    /* subtle contrast & depth */
     position: relative;
     flex-shrink: 0;
 }
@@ -124,12 +151,12 @@
 
 .mw-imageslider-vertical .mw-imageslider-grip:before {
     right: var(--imageslider-arrow-offset);
-    border-right: var(--imageslider-arrow-len) solid #444;
+    border-right: var(--imageslider-arrow-len) solid #fff;
 }
 
 .mw-imageslider-vertical .mw-imageslider-grip:after {
     left: var(--imageslider-arrow-offset);
-    border-left: var(--imageslider-arrow-len) solid #444;
+    border-left: var(--imageslider-arrow-len) solid #fff;
 }
 
 /* Horizontal arrows */
@@ -143,12 +170,12 @@
 
 .mw-imageslider-horizontal .mw-imageslider-grip:before {
     bottom: var(--imageslider-arrow-offset);
-    border-bottom: var(--imageslider-arrow-len) solid #444;
+    border-bottom: var(--imageslider-arrow-len) solid #fff;
 }
 
 .mw-imageslider-horizontal .mw-imageslider-grip:after {
     top: var(--imageslider-arrow-offset);
-    border-top: var(--imageslider-arrow-len) solid #444;
+    border-top: var(--imageslider-arrow-len) solid #fff;
 }
 
 /* Accessible custom focus ring (hide default outline but show visible indicator) */
