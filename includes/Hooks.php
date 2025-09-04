@@ -1,34 +1,63 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ImageSlider;
 
+// Imports for global MediaWiki core symbols so static analyzers resolve them correctly.
 use Parser;
 use PPFrame;
+use function wfMessage;
+use const NS_FILE;
 use MediaWiki\MediaWikiServices;
-use MediaWiki\Title\Title; // For backward compatibility if still present
 use MediaWiki\Title\TitleFactory;
 
 class Hooks
 {
     /**
+     * Default pixel width when width is omitted.
+     */
+    private const DEFAULT_WIDTH = 900;
+
+    /**
+     * Hard ceiling to avoid requesting extremely large thumbs.
+     */
+    private const MAX_THUMB_WIDTH = 4096;
+    /**
      * Register parser function.
+     */
+    /**
+     * @param Parser $parser
      */
     public static function onParserFirstCallInit(Parser $parser): void
     {
-        $parser->setFunctionHook('imageslider', [self::class, 'renderImageSlider'], Parser::SFH_OBJECT_ARGS);
+        $parser->setFunctionHook('imageslider', [self::class, 'renderImageSlider'], \Parser::SFH_OBJECT_ARGS);
     }
 
     /**
      * Render the slider.
      * Usage: {{#imageslider:Image1=File:Example1.jpg|Image2=File:Example2.jpg|width=900px}}
      */
-    public static function renderImageSlider(Parser $parser, PPFrame $frame, array $args)
+    /**
+     * Parser function callback for #imageslider.
+     * @param Parser $parser
+     * @param PPFrame $frame
+     * @param array $args Raw argument nodes
+     * @return array HTML + flags per Parser function contract
+     */
+    public static function renderImageSlider(Parser $parser, PPFrame $frame, array $args): array
     {
         $named = self::parseArgs($frame, $args);
         // Accept only Image1 / Image2 (case-insensitive variants) as parameters.
         $file1Name = $named['Image1'] ?? $named['image1'] ?? null;
         $file2Name = $named['Image2'] ?? $named['image2'] ?? null;
-        $width = $named['width'] ?? 'auto';
+        // Width: only pixel values are supported (e.g. 800 or 800px). Anything else falls back to default.
+        $rawWidth = $named['width'] ?? '';
+        $pixelWidth = self::extractPixelWidth($rawWidth) ?? self::DEFAULT_WIDTH;
+        if ($pixelWidth > self::MAX_THUMB_WIDTH) {
+            $pixelWidth = self::MAX_THUMB_WIDTH;
+        }
+        $width = $pixelWidth . 'px';
         $orientation = strtolower($named['orientation'] ?? $named['mode'] ?? 'vertical');
         if (!in_array($orientation, ['vertical', 'horizontal'], true)) {
             $orientation = 'vertical';
@@ -51,30 +80,19 @@ class Hooks
             return self::errorOutput($parser, 'imageslider-missing-param');
         }
 
-        $fileUrl1 = self::fileUrlFromName($file1Name);
-        $fileUrl2 = self::fileUrlFromName($file2Name);
+        // Use sanitized pixel width for thumbnail generation.
+        $fileUrl1 = self::fileUrlFromName($file1Name, $pixelWidth);
+        $fileUrl2 = self::fileUrlFromName($file2Name, $pixelWidth);
         if (!$fileUrl1 || !$fileUrl2) {
             return self::errorOutput($parser, 'imageslider-missing-file');
         }
 
         $parser->getOutput()->addModules(['ext.ImageSlider']);
 
-        // Width handling: if provided, enforce explicit width; otherwise fluid 100%.
-        $containerStyle = '';
-        $pixelWidthAttr = null;
-        if ($width !== 'auto') {
-            $safeWidth = htmlspecialchars($width);
-            // If pixel value (e.g. 900px or numeric), set fixed width; else treat as generic CSS length/percentage.
-            if (preg_match('/^\d+$/', $width)) {
-                $safeWidth .= 'px';
-            }
-            if (preg_match('/^\d+px$/i', $safeWidth)) {
-                $pixelWidthAttr = $safeWidth; // use as width attribute for initial layout stability
-            }
-            $containerStyle = 'width:' . $safeWidth . ';';
-        } else {
-            $containerStyle = 'width:100%;';
-        }
+        // Width handling: always fixed pixel width.
+        $safeWidth = htmlspecialchars($width, ENT_QUOTES);
+        $pixelWidthAttr = $safeWidth; // numeric px width attribute
+        $containerStyle = 'width:' . $safeWidth . ';';
 
         $htmlClass = class_exists('\\MediaWiki\\Html\\Html') ? '\\MediaWiki\\Html\\Html' : (class_exists('\\Html') ? '\\Html' : null);
         if ($htmlClass === null) {
@@ -85,9 +103,7 @@ class Hooks
             $imgCommon['width'] = rtrim($pixelWidthAttr, 'px');
         }
         $outerClasses = 'mw-imageslider mw-imageslider-' . $orientation;
-        // aria-orientation should match movement axis: vertical slider means left/right adjustment ⇒ aria-orientation="vertical" is incorrect.
-        // According to WAI-ARIA, orientation describes the axis of the slider track. Our vertical mode track is vertical visually (divider runs top->bottom while moving left/right?).
-        // To simplify: align aria-orientation with configured orientation for user expectation.
+        // Use supplied orientation directly for ARIA (track direction hint)
         $ariaOrientation = $orientation;
         $html = $htmlClass::rawElement(
             'div',
@@ -97,13 +113,28 @@ class Hooks
                 ['class' => 'mw-imageslider-wrapper', 'data-width' => $width],
                 $htmlClass::element('img', $imgCommon + ['class' => 'mw-imageslider-img before', 'src' => $fileUrl1]) .
                     $htmlClass::element('img', $imgCommon + ['class' => 'mw-imageslider-img after', 'src' => $fileUrl2]) .
-                    $htmlClass::rawElement('div', ['class' => 'mw-imageslider-handle', 'role' => 'slider', 'tabindex' => '0', 'aria-label' => 'Drag to compare', 'aria-orientation' => $ariaOrientation, 'aria-valuemin' => '0', 'aria-valuemax' => '100', 'aria-valuenow' => '50'], '<span class="mw-imageslider-grip"></span>')
+                    $htmlClass::rawElement('div', [
+                        'class' => 'mw-imageslider-handle',
+                        'role' => 'slider',
+                        'tabindex' => '0',
+                        'aria-label' => 'Drag to compare',
+                        'aria-orientation' => $ariaOrientation,
+                        'aria-valuemin' => '0',
+                        'aria-valuemax' => '100',
+                        'aria-valuenow' => '50'
+                    ], '<span class="mw-imageslider-grip"></span>')
             )
         );
 
         return [$html, 'isHTML' => true, 'noparse' => true];
     }
 
+    /**
+     * Normalize and parse named args (case-insensitive keys).
+     * @param PPFrame $frame
+     * @param array $args
+     * @return array
+     */
     private static function parseArgs(PPFrame $frame, array $args): array
     {
         $out = [];
@@ -133,15 +164,18 @@ class Hooks
         return $out;
     }
 
-    private static function fileUrlFromName(string $name): ?string
+    /**
+     * Resolve file title to a full URL or null.
+     */
+    private static function fileUrlFromName(string $name, ?int $thumbWidth = null): ?string
     {
         $services = MediaWikiServices::getInstance();
         // Prefer TitleFactory (modern)
         if (class_exists(TitleFactory::class)) {
-            $title = $services->getTitleFactory()->newFromText($name, NS_FILE);
+            $title = $services->getTitleFactory()->newFromText($name, \NS_FILE);
         } else {
             // Fallback to legacy global Title class if available
-            $title = class_exists('\\Title') ? \Title::newFromText($name, NS_FILE) : null;
+            $title = class_exists('\\Title') ? \Title::newFromText($name, \NS_FILE) : null;
         }
         if (!$title) {
             return null;
@@ -150,14 +184,79 @@ class Hooks
         if (!$file) {
             return null;
         }
+        // If a thumbnail width is requested, attempt to build a thumb.php URL (preferred lightweight) or fall back.
+        if ($thumbWidth && $thumbWidth > 0) {
+            $thumbWidth = max(1, min(self::MAX_THUMB_WIDTH, $thumbWidth));
+            $thumbUrl = self::thumbScriptUrl($file, $thumbWidth);
+            if ($thumbUrl) {
+                return $thumbUrl;
+            }
+            // Fallback to standard transform (will create if absent)
+            $transform = $file->transform(['width' => $thumbWidth]);
+            if ($transform && !$transform->isError()) {
+                $u = $transform->getUrl();
+                if (is_string($u) && $u !== '') {
+                    return $u;
+                }
+            }
+        }
         return $file->getFullUrl();
     }
 
-    private static function errorOutput(Parser $parser, string $msgKey)
+    /**
+     * Extract integer pixel width from a width spec (e.g. "900", "900px", "100%" -> null).
+     */
+    private static function extractPixelWidth(string $widthSpec): ?int
+    {
+        $trim = trim($widthSpec);
+        if ($trim === '') {
+            return null;
+        }
+        if (preg_match('/^(\d+)px$/i', $trim, $m)) {
+            return (int)$m[1];
+        }
+        if (preg_match('/^\d+$/', $trim)) {
+            return (int)$trim;
+        }
+        return null; // percentages or other units not handled for thumbs
+    }
+
+    /**
+     * Build a thumb.php URL if $wgThumbnailScriptPath is configured.
+     */
+    private static function thumbScriptUrl($file, int $width): ?string
+    {
+        // Rely on global configuration value.
+        global $wgThumbnailScriptPath;
+        if (!isset($wgThumbnailScriptPath) || !$wgThumbnailScriptPath) {
+            return null;
+        }
+        // Title DB key provides underscores etc.
+        $title = method_exists($file, 'getTitle') ? $file->getTitle() : null;
+        if (!$title) {
+            return null;
+        }
+        $fname = $title->getDBkey();
+        // Use 'w' parameter (alias often accepted) but docs show 'w'.
+        $query = http_build_query([
+            'f' => $fname,
+            'w' => $width
+        ], '', '&', PHP_QUERY_RFC3986);
+        // Ensure script path is absolute or relative as configured; leave unchanged.
+        return rtrim($wgThumbnailScriptPath, '?') . '?' . $query;
+    }
+
+    /**
+     * Emit standardized error with tracking category.
+     */
+    private static function errorOutput(Parser $parser, string $msgKey): array
     {
         $parser->addTrackingCategory('imageslider-tracking-category');
         $htmlClass = class_exists('\\MediaWiki\\Html\\Html') ? '\\MediaWiki\\Html\\Html' : (class_exists('\\Html') ? '\\Html' : null);
-        $html = $htmlClass ? $htmlClass::element('div', ['class' => 'error imageslider-error'], wfMessage($msgKey)->inContentLanguage()->text()) : '<div class="error imageslider-error">' . htmlspecialchars(wfMessage($msgKey)->inContentLanguage()->text()) . '</div>';
+        $msg = wfMessage($msgKey)->inContentLanguage()->text();
+        $html = $htmlClass
+            ? $htmlClass::element('div', ['class' => 'error imageslider-error'], $msg)
+            : '<div class="error imageslider-error">' . htmlspecialchars($msg) . '</div>';
         return [$html, 'isHTML' => true];
     }
 }

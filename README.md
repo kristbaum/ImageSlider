@@ -18,7 +18,7 @@ ImageSlider provides a parser function that overlays two images with a draggable
 
 ## 3. Requirements
 
-* MediaWiki 1.35+ (developed & tested with 1.44 dev)
+* MediaWiki 1.39+ (developed & tested with 1.44 dev)
 * PHP & extensions per your MediaWiki core version
 * For Docker dev environment: Docker + Docker Compose v2
 
