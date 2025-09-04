@@ -1,126 +1,130 @@
 # ImageSlider
 
-MediaWiki extension providing a lightweight before/after image comparison slider via a parser function.
+Lightweight before/after comparison slider for MediaWiki pages (pure JS + CSS, no external dependencies).
 
-## Features
+## 1. Overview
 
-* Simple, dependency‑light slider (pure JS + CSS; no external network requests)
+ImageSlider provides a parser function that overlays two images with a draggable handle (or keyboard‑controlled slider) to reveal differences. Supports vertical (left/right) and horizontal (up/down) orientations, is accessible, and ships with a turnkey Docker environment.
+
+## 2. Features
+
 * Parser function: `{{#imageslider:Image1=File:Before.jpg|Image2=File:After.jpg|width=900px}}`
-* Keyboard accessible (arrow keys / Home / End)
-* Works on desktop & mobile (pointer + touch)
-* Development environment with Docker Compose
+* Vertical & horizontal orientations (`orientation=vertical|horizontal`)
+* Keyboard & screen‑reader friendly (ARIA slider semantics)
+* Works with mouse, touch, and keyboard
+* Automatic aspect‑ratio preservation based on first image
+* Error reporting + tracking category for missing/misused parameters
+* Self‑contained ResourceLoader module (single JS + CSS bundle)
 
-## Installation (manual)
+## 3. Requirements
 
-1. Clone into your `extensions` directory:
+* MediaWiki 1.35+ (developed & tested with 1.44 dev)
+* PHP & extensions per your MediaWiki core version
+* For Docker dev environment: Docker + Docker Compose v2
+
+## 4. Installation
+
+Clone into `extensions` and enable:
 
 ```bash
 cd /path/to/mediawiki/extensions
 git clone https://example.org/ImageSlider.git ImageSlider
 ```
 
-1. Add to `LocalSettings.php`:
+Add to `LocalSettings.php`:
 
 ```php
 wfLoadExtension( 'ImageSlider' );
 ```
-1. Clear caches (optional): `php maintenance/run.php purgeList --list=Main_Page` or touch `LocalSettings.php`.
 
-Requires MediaWiki 1.35+ (tested with 1.44 in dev setup).
+Optionally purge a page or touch `LocalSettings.php` to bypass caches.
 
-## Usage
+## 5. Usage
 
-Upload (or already have) two files on the wiki. Then add to a page:
+Place the parser function on any wiki page after ensuring both files exist:
 
 ```wikitext
-{{#imageslider:Image1=File:OldTown_square_1900.jpg|Image2=File:OldTown_square_2024.jpg|width=900px}}
+{{#imageslider:Image1=File:OldTown_square_1900.jpg|Image2=File:OldTown_square_2024.jpg|width=900px|orientation=vertical}}
 ```
 
-Parameters:
+### Parameters
 
-* `Image1` (required) – First image (left side initially visible)
-* `Image2` (required) – Second image (revealed when sliding)
-* `width` (optional) – Max container width (e.g. `900px`, `600px`, `100%`). Defaults to auto (full width of parent).
-* `orientation` (optional) – `vertical` (default; vertical divider moving left/right) or `horizontal` (horizontal divider moving up/down).
+| Name | Required | Description |
+|------|----------|-------------|
+| `Image1` | yes | First image; initially visible side (left or top). |
+| `Image2` | yes | Second image; revealed as you slide. |
+| `width` | no  | Max container width (e.g. `900px`, `60%`, `100%`). Defaults to full available width. |
+| `orientation` | no | `vertical` (default, divider left/right) or `horizontal` (divider up/down). |
 
-If an image can't be resolved an inline error plus tracking category is added.
+If a file can't be resolved an inline error message is shown and the page is added to the tracking category.
 
-### Accessibility & Interaction
+### Interaction & Accessibility
 
-* Drag the circular handle horizontally to reveal more / less.
-* Keyboard: Left / Right (or Up / Down) adjusts; Home = 0%, End = 100%.
+* Drag the circular handle (pointer or touch)
+* Click/tap anywhere on the image to jump the handle
+* Keyboard: Arrow keys adjust (±2%), Home = 0%, End = 100%
+* ARIA role="slider" with orientation & value states provided
 
-## Development Environment (Docker)
+## 6. Development (Docker)
 
-Spin up a fresh MediaWiki + MariaDB with the extension mounted.
+Local environment with MediaWiki + MariaDB:
 
 ```bash
 docker compose up -d --build
 ```
 
-Access: <http://localhost:8080>
+Visit <http://localhost:8080> and log in with the credentials from `docker-compose.yml` (default: admin / adminpass111 — do NOT reuse in production).
 
-An admin user & database are auto‑provisioned via environment variables defined in `docker-compose.yml` (admin / adminpass for quick local testing – do **not** reuse in production).
-
-To stop:
+Stop containers:
 
 ```bash
 docker compose down
 ```
 
-Persistent volumes retain uploaded images & database data (`images`, `dbdata`). Remove with:
+Remove volumes (wipe images & DB):
 
 ```bash
 docker compose down -v
 ```
 
-### Making Code Changes
+### Cache Busting During Development
 
-Resources are loaded through ResourceLoader. After editing JS/CSS you may need to bypass cache:
-
-* Append `?action=purge` to the page OR
-* Use browser hard reload (Ctrl+F5)
+* Add `?action=purge` to the page URL, or
+* Force reload (Ctrl+F5)
 
 ### Adding Sample Images
 
-1. Log in as admin
-2. Upload two images (`Special:Upload`)
-3. Edit `Main Page` and insert the parser function.
+1. Upload two images via `Special:Upload`
+2. Edit a page and insert the parser function
+3. Adjust `width=` or `orientation=` as needed
 
-## Architecture Notes
+## 7. Architecture
 
-* `extension.json` registers a parser hook (`#imageslider`) and a single RL module `ext.ImageSlider`.
-* The hook resolves File: titles to URLs via core RepoGroup service.
-* JavaScript wraps the first image in a clipping container; the handle adjusts width via inline styles.
-* No external third‑party library bundled (original Twentytwenty design concept re‑implemented from scratch to avoid extra payload & licensing concerns). Feel free to swap in another implementation inside `resources/js/imageslider.js` if needed.
+* `extension.json` registers the parser hook and ResourceLoader module `ext.ImageSlider`.
+* Parser hook resolves `File:` titles to URLs using MediaWiki core services (RepoGroup).
+* A wrapper holds two absolutely positioned images; the top image is clipped via a CSS `clip-path` updated by JS.
+* JS keeps a CSS custom property (`--imageslider-reveal`) in pixels for precise clipping.
+* Handle position & accessibility state (aria-valuenow) update with input.
+* Orientation toggles axis math (x vs y) without duplicate code paths.
 
-## Internationalisation
+## 8. Internationalisation
 
-Messages are in `i18n/en.json`. Provide translations by adding new language JSON files (e.g. `i18n/de.json`) with the same keys.
+Translations live in `i18n/*.json`. Add a new language file (e.g. `i18n/de.json`) mirroring keys in `en.json`.
 
-## Tracking Category
+## 9. Tracking Category
 
-Pages misusing the function (missing params or missing files) are added to the category exposed via message: `imageslider-tracking-category`.
+Pages with configuration errors (missing images/params) are put in the category referenced by message key: `imageslider-tracking-category`.
 
-## Template Wrapper (Optional)
+## 10. Optional Template Wrapper
 
-You can create a template `Template:ImageSlider` replicating the historic usage:
-
-```wikitext
-<noinclude>{{Documentation}}</noinclude>
-<includeonly>{{#imageslider:Image1={{{Image1|}}}|Image2={{{Image2|}}}|width={{{width|auto}}}}}</includeonly>
-```
-
-Then invoke:
+Create `Template:ImageSlider` for friendlier syntax:
 
 ```wikitext
-{{ImageSlider|Image1=File:A.jpg|Image2=File:B.jpg|width=600px}}
+<includeonly>{{#imageslider:Image1={{{Image1|}}}|Image2={{{Image2|}}}|width={{{width|auto}}}|orientation={{{orientation|vertical}}}}}</includeonly><noinclude>Documentation here</noinclude>
 ```
 
-## Roadmap / Ideas
+Invoke:
 
-* Vertical mode (optional parameter `mode=vertical`)
-* Lazy loading via `loading="lazy"` & intersection observer
-* Optional labels (e.g. `label1=Then|label2=Now`)
-* Add QUnit test module
-* RTL layout testing
+```wikitext
+{{ImageSlider|Image1=File:A.jpg|Image2=File:B.jpg|width=600px|orientation=horizontal}}
+```

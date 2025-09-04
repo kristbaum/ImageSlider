@@ -151,6 +151,15 @@
     border-top: var(--imageslider-arrow-len) solid #444;
 }
 
+/* Accessible custom focus ring (hide default outline but show visible indicator) */
+.mw-imageslider-handle:focus {
+    outline: none;
+}
+
+.mw-imageslider-handle:focus .mw-imageslider-grip {
+    box-shadow: 0 0 0 2px rgba(0, 132, 255, .55), 0 4px 10px rgba(0, 0, 0, .25), 0 0 0 1px rgba(255, 255, 255, .4) inset;
+}
+
 .imageslider-error {
     color: #d33;
 }

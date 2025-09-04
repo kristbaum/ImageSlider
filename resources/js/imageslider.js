@@ -48,7 +48,9 @@
         }
 
         function startDrag(e) {
-            e.preventDefault();
+            e.preventDefault(); // prevent image dragging / text selection
+            // Ensure handle receives focus so subsequent key presses work
+            $handle.trigger('focus');
             $(document).on('mousemove.imageslider touchmove.imageslider', function (ev) {
                 var t = (ev.originalEvent.touches && ev.originalEvent.touches[0]) || ev;
                 pointerToPosition(t.pageX, t.pageY);
@@ -62,6 +64,8 @@
         $wrapper.on('click', function (e) {
             if ($(e.target).closest('.mw-imageslider-handle').length) { return; }
             pointerToPosition(e.pageX, e.pageY);
+            // After jump, move focus to handle for immediate keyboard interaction
+            $handle.trigger('focus');
         });
 
         $handle.on('keydown', function (e) {
