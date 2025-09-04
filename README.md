@@ -115,16 +115,38 @@ Translations live in `i18n/*.json`. Add a new language file (e.g. `i18n/de.json`
 
 Pages with configuration errors (missing images/params) are put in the category referenced by message key: `imageslider-tracking-category`.
 
-## 10. Optional Template Wrapper
+## 10. Optional Template Wrapper (with captions & file links)
 
-Create `Template:ImageSlider` for friendlier syntax:
-
-```wikitext
-<includeonly>{{#imageslider:Image1={{{Image1|}}}|Image2={{{Image2|}}}|width={{{width|auto}}}|orientation={{{orientation|vertical}}}}}</includeonly><noinclude>Documentation here</noinclude>
-```
-
-Invoke:
+Create `Template:ImageSlider` to simplify usage and add caption lines linking to the file description pages.
 
 ```wikitext
-{{ImageSlider|Image1=File:A.jpg|Image2=File:B.jpg|width=600px|orientation=horizontal}}
+<includeonly>
+<!-- Core slider -->
+{{#imageslider:Image1={{{Image1|}}}|Image2={{{Image2|}}}|width={{{width|}}}|orientation={{{orientation|vertical}}}}}
+
+<!-- Caption block (shows only if at least one caption provided) -->
+<div class="imageslider-captions" style="margin-top:0.4em; font-size:90%; line-height:1.4;">
+[[:File:{{PAGENAME:{{{Image1|}}}}}|First image]]: {{{Caption1|}}}
+
+[[:File:{{PAGENAME:{{{Image2|}}}}}|Second image]]: {{{Caption2|}}}
+</div>
+</includeonly><noinclude>
+This template wraps the ImageSlider parser function.
+
+Parameters:
+* Image1 / Image2 (required): File titles (include the `File:` prefix)
+* width (optional, pixels)
+* orientation (vertical|horizontal, default vertical)
+* Caption1 / Caption2 (optional): Text shown beneath with a link to each file.
+
+Example usage:
+<pre>{{ImageSlider
+ | Image1 = File:Sunrise_before.jpg
+ | Image2 = File:Sunrise_after.jpg
+ | width = 900px
+ | orientation = horizontal
+ | Caption1 = Original exposure
+ | Caption2 = Retouched version
+}}</pre>
+</noinclude>
 ```
