@@ -103,22 +103,20 @@ class Hooks
             $imgCommon['width'] = rtrim($pixelWidthAttr, 'px');
         }
         $outerClasses = 'mw-imageslider mw-imageslider-' . $orientation;
-        // Use supplied orientation directly for ARIA (track direction hint)
-        $ariaOrientation = $orientation;
         $html = $htmlClass::rawElement(
             'div',
             ['class' => $outerClasses, 'style' => $containerStyle, 'data-orientation' => $orientation],
             $htmlClass::rawElement(
                 'div',
                 ['class' => 'mw-imageslider-wrapper', 'data-width' => $width],
-                $htmlClass::element('img', $imgCommon + ['class' => 'mw-imageslider-img before', 'src' => $fileUrl1]) .
-                    $htmlClass::element('img', $imgCommon + ['class' => 'mw-imageslider-img after', 'src' => $fileUrl2]) .
+                $htmlClass::element('img', $imgCommon + ['class' => 'mw-imageslider-img before', 'src' => $fileUrl2]) .
+                    $htmlClass::element('img', $imgCommon + ['class' => 'mw-imageslider-img after', 'src' => $fileUrl1]) .
                     $htmlClass::rawElement('div', [
                         'class' => 'mw-imageslider-handle',
                         'role' => 'slider',
                         'tabindex' => '0',
                         'aria-label' => 'Drag to compare',
-                        'aria-orientation' => $ariaOrientation,
+                        'aria-orientation' => $orientation,
                         'aria-valuemin' => '0',
                         'aria-valuemax' => '100',
                         'aria-valuenow' => '50'

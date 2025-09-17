@@ -44,7 +44,7 @@ Optionally purge a page or touch `LocalSettings.php` to bypass caches.
 Place the parser function on any wiki page after ensuring both files exist:
 
 ```wikitext
-{{#imageslider:Image1=File:OldTown_square_1900.jpg|Image2=File:OldTown_square_2024.jpg|width=900px|orientation=vertical}}
+{{#imageslider:Image1=File:20250528 SL1 Offiziers Speiseanstalt, Postkarte.jpg|Image2=File:20250528 SL2 Offiziers Speiseanstalt Fürth.jpg|width=900px|orientation=vertical}}
 ```
 
 ### Parameters
@@ -67,36 +67,21 @@ If a file can't be resolved an inline error message is shown and the page is add
 
 ## 6. Development (Docker)
 
-Local environment with MediaWiki + MariaDB:
+The dev environment now uses SQLite (file-based) instead of a separate MariaDB container to keep setup friction minimal.
+
+### Start MediaWiki + Extension
 
 ```bash
 docker compose up -d --build
 ```
 
-Visit <http://localhost:8080> and log in with the credentials from `docker-compose.yml` (default: admin / adminpass111 — do NOT reuse in production).
+Then visit <http://localhost:8080>.
 
-Stop containers:
-
-```bash
-docker compose down
-```
-
-Remove volumes (wipe images & DB):
+Remove all persistent data (images + SQLite DB) and rebuild fresh:
 
 ```bash
 docker compose down -v
 ```
-
-### Cache Busting During Development
-
-* Add `?action=purge` to the page URL, or
-* Force reload (Ctrl+F5)
-
-### Adding Sample Images
-
-1. Upload two images via `Special:Upload`
-2. Edit a page and insert the parser function
-3. Adjust `width=` or `orientation=` as needed
 
 ## 7. Architecture
 
@@ -107,15 +92,11 @@ docker compose down -v
 * Handle position & accessibility state (aria-valuenow) update with input.
 * Orientation toggles axis math (x vs y) without duplicate code paths.
 
-## 8. Internationalisation
-
-Translations live in `i18n/*.json`. Add a new language file (e.g. `i18n/de.json`) mirroring keys in `en.json`.
-
-## 9. Tracking Category
+## 8. Tracking Category
 
 Pages with configuration errors (missing images/params) are put in the category referenced by message key: `imageslider-tracking-category`.
 
-## 10. Optional Template Wrapper (with captions & file links)
+## 9. Optional Template Wrapper (with captions & file links)
 
 Create `Template:ImageSlider` to simplify usage and add caption lines linking to the file description pages.
 
@@ -141,12 +122,12 @@ Parameters:
 
 Example usage:
 <pre>{{ImageSlider
- | Image1 = File:Sunrise_before.jpg
- | Image2 = File:Sunrise_after.jpg
+ | Image1 = File:20250528 SL1 Offiziers Speiseanstalt, Postkarte.jpg
+ | Image2 = File:20250528 SL2 Offiziers Speiseanstalt Fürth.jpg
  | width = 900px
- | orientation = horizontal
- | Caption1 = Original exposure
- | Caption2 = Retouched version
+ | orientation = vertical
+ | Caption1 = Postcard, ca. 1916
+ | Caption2 = Photo from May 2025
 }}</pre>
 </noinclude>
 ```

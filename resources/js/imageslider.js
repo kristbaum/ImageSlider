@@ -22,8 +22,8 @@
         function layout() {
             // Maintain aspect ratio of first image
             var w = $wrapper.width();
-            var natW = $before[0].naturalWidth || w;
-            var natH = $before[0].naturalHeight || $before.height();
+            var natW = $after[0].naturalWidth || w;
+            var natH = $after[0].naturalHeight || $after.height();
             if (natW && natH) {
                 $wrapper.height(Math.round((natH / natW) * w));
             }

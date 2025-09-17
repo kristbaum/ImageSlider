@@ -8,19 +8,6 @@ services:
     volumes:
       - ./docker/LocalSettings.php:/var/www/html/LocalSettings.php
       - ./:/var/www/html/extensions/ImageSlider
-      - images:/var/www/html/images
-    depends_on:
-      - db
-  db:
-    image: mariadb:10.6
-    restart: unless-stopped
-    environment:
-      - MARIADB_DATABASE=wikidb
-      - MARIADB_USER=wiki
-      - MARIADB_PASSWORD=wikisecret
-      - MARIADB_ROOT_PASSWORD=wikiroot
-    volumes:
-      - dbdata:/var/lib/mysql
+      - data:/var/www/data
 volumes:
-  images:
-  dbdata:
+  data:
