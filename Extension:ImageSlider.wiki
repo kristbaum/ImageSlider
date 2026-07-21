@@ -1,0 +1,106 @@
+{{Extension|templatemode = 
+|name                 = ImageSlider 
+|status               = stable
+|type1                = parser function
+|type2                = 
+|hook1                = ParserFirstCallInit
+|hook2                = 
+|newhook1             = 
+|newhook2             = 
+|username             = Kristbaum
+|author               = <!-- add only if different from user name -->
+|description          = Adds a lightweight before/after image comparison slider
+|image                =ImageSliderExtensionDemo.gif 
+|version              = 1.0.0
+|update               = 2025-09-18
+|version preview      = 
+|update preview       = 
+|compatibility policy = main
+|mediawiki            = >= 1.39
+|php                  = 
+|needs-updatephp      =No 
+|composer             = 
+|table1               = 
+|table2               = 
+|license              =  GPL-3.0-or-later
+|download             = {{GithubDownload|kristbaum|ImageSlider|mastertarball=1}}
+|readme               = [https://github.com/kristbaum/ImageSlider/blob/main/README.md README]
+|changelog            = 
+|help                 = <!-- automatically links to Help:Extension:ExtName if it exists, otherwise enter full wikitext link to end-user docs -->
+|example              = <code>{{#imageslider:Image1=File:Before.jpg|Image2=File:After.jpg|width=800px}}</code>
+|namespace            = 
+|parameters           = 
+|tags                 = 
+|rights               = <!-- user rights, for use with $wgGroupPermissions -->
+|compatibility        = 
+|phabricator          = 
+|vagrant-role         = 
+}}
+
+The '''ImageSlider''' extension provides a simple, dependency‑light before/after comparison slider for two images using a parser function. 
+
+It supports both vertical (left/right) and horizontal (up/down) reveal modes, is keyboard accessible (ARIA slider, arrow keys, Home/End), touch/mouse friendly, and adds no external libraries.
+
+Based on the [https://www.fuerthwiki.de/wiki/index.php?title=Kategorie:Hat_ImageSlider FürthWiki implementation] by Mark Muzenhardt.
+
+== Usage == 
+
+Basic example: <syntaxhighlight lang="mediawiki"> {{#imageslider:Image1=File:20250528 SL1 Offiziers Speiseanstalt, Postkarte.jpg|Image2=File:20250528 SL2 Offiziers Speiseanstalt Fürth.jpg|width=900px}} </syntaxhighlight>
+
+With horizontal mode: <syntaxhighlight lang="mediawiki"> {{#imageslider:Image1=File:20250528 SL1 Offiziers Speiseanstalt, Postkarte.jpg|Image2=File:20250528 SL2 Offiziers Speiseanstalt Fürth.jpg|width=900px|orientation=horizontal}} </syntaxhighlight>
+
+
+=== Parameters (parser function) ===
+
+{| class="wikitable"
+! Name !! Required !! Description
+|-
+| Image1 || Yes || First (base) image (initially visible side: left or top)
+|-
+| Image2 || Yes || Second image revealed by sliding
+|-
+| width || No || Max container width (e.g. <code>900px</code>, <code>60%</code>, <code>100%</code>). Default: 900px
+|-
+| orientation || No || <code>vertical</code> (default, divider moves left/right) or <code>horizontal</code> (divider moves up/down)
+|}
+
+If either file cannot be resolved, an inline error is shown and the page is added to the tracking category.
+
+==Installation==
+
+{{ExtensionInstall|registration=true|download-link=[https://github.com/kristbaum/ImageSlider/tarball/master Download]}}
+== Tracking category ==
+Pages with parameter or file errors are added to: {{ll|Category:Pages with ImageSlider errors}} (message key: <code>imageslider-tracking-category</code>).
+
+== Full template ==
+This is a template with image links and captions below the slider for convenience:
+<syntaxhighlight lang="mediawiki"><includeonly>
+{{#imageslider:Image1={{{Image1|}}}|Image2={{{Image2|}}}|width={{{width|}}}|orientation={{{orientation|vertical}}}}}
+
+<div class="imageslider-captions" style="margin-top:0.4em; font-size:90%; line-height:1.4;">
+[[:File:{{PAGENAME:{{{Image1|}}}}}|First image]]: {{{Caption1|}}}
+
+[[:File:{{PAGENAME:{{{Image2|}}}}}|Second image]]: {{{Caption2|}}}
+</div>
+</includeonly><noinclude>
+This template wraps the ImageSlider parser function.
+
+Parameters:
+* Image1 / Image2 (required): File titles (include the `File:` prefix)
+* width (optiona, pixels, default 900px)
+* orientation (vertical|horizontal, default vertical)
+* Caption1 / Caption2 (optional): Text shown beneath with a link to each file.
+
+Example usage:
+<pre>{{ImageSlider
+| Image1 = File:20250528 SL1 Offiziers Speiseanstalt, Postkarte.jpg
+| Image2 = File:20250528 SL2 Offiziers Speiseanstalt Fürth.jpg
+| width = 900px
+| orientation = vertical
+| Caption1 = Postcard, ca. 1916
+| Caption2 = Photo from May 2025
+}}</pre>
+</noinclude></syntaxhighlight>
+
+
+[[Category:Multimedia]]
