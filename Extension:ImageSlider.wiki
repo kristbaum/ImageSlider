@@ -11,8 +11,8 @@
 |author               = <!-- add only if different from user name -->
 |description          = Adds a lightweight before/after image comparison slider
 |image                =ImageSliderExtensionDemo.gif 
-|version              = 1.0.0
-|update               = 2025-09-18
+|version              = 1.1.0
+|update               = 2026-07-21
 |version preview      = 
 |update preview       = 
 |compatibility policy = main
@@ -59,7 +59,7 @@ With horizontal mode: <syntaxhighlight lang="mediawiki"> {{#imageslider:Image1=F
 |-
 | Image2 || Yes || Second image revealed by sliding
 |-
-| width || No || Max container width (e.g. <code>900px</code>, <code>60%</code>, <code>100%</code>). Default: 900px
+| width || No || Container width in pixels, given as <code>900px</code> or plain <code>900</code>. Percentages and other units are '''not''' supported and fall back to the default. Default: 900px, capped at 4096px
 |-
 | orientation || No || <code>vertical</code> (default, divider moves left/right) or <code>horizontal</code> (divider moves up/down)
 |}
@@ -68,7 +68,7 @@ If either file cannot be resolved, an inline error is shown and the page is adde
 
 ==Installation==
 
-{{ExtensionInstall|registration=true|download-link=[https://github.com/kristbaum/ImageSlider/tarball/master Download]}}
+{{ExtensionInstall|registration=true|download-link=[https://github.com/kristbaum/ImageSlider/tarball/main Download]}}
 == Tracking category ==
 Pages with parameter or file errors are added to: {{ll|Category:Pages with ImageSlider errors}} (message key: <code>imageslider-tracking-category</code>).
 
@@ -86,8 +86,8 @@ This is a template with image links and captions below the slider for convenienc
 This template wraps the ImageSlider parser function.
 
 Parameters:
-* Image1 / Image2 (required): File titles (include the `File:` prefix)
-* width (optiona, pixels, default 900px)
+* Image1 / Image2 (required): File titles (include the <code>File:</code> prefix)
+* width (optional, pixels, default 900px)
 * orientation (vertical|horizontal, default vertical)
 * Caption1 / Caption2 (optional): Text shown beneath with a link to each file.
 
