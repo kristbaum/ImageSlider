@@ -4,7 +4,7 @@ The ImageSlider extension provides a simple, dependency‑light before/after com
 
 It supports both vertical (left/right) and horizontal (up/down) reveal modes, is keyboard accessible (ARIA slider, arrow keys, Home/End), touch/mouse friendly, and adds no external libraries.
 
-Based on the FürthWiki implementation by Mark Muzenhardt. 
+Based on the FürthWiki implementation by Mark Muzenhardt.
 
 See the full documentation on [mediawiki.org](https://www.mediawiki.org/wiki/Extension:ImageSlider).
 
