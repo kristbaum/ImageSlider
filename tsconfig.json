@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    /* ResourceLoader serves the emitted file as a plain, non-module script. */
+    "target": "ES2017",
+    /* "preserve" implies modern "bundler" resolution so node_modules types are
+       found. imageslider.ts has no import/export, so it stays a plain script. */
+    "module": "preserve",
+    "lib": ["ES2017", "DOM"],
+
+    "rootDir": "src",
+    "outDir": "resources/js",
+    "newLine": "lf",
+
+    /* Globals ($ and mw) come from src/types/globals.d.ts, which references the
+       jquery and types-mediawiki packages explicitly. Nothing is auto-included. */
+    "types": [],
+
+    "strict": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*.ts"]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "imageslider",
+  "version": "0.1.0",
+  "description": "MediaWiki extension providing a before/after image comparison slider parser function",
+  "license": "GPL-3.0-or-later",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "lint": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json",
+    "pretest": "npm run build",
+    "test": "node --test \"tests/**/*.test.ts\""
+  },
+  "devDependencies": {
+    "@types/jsdom": "^28.0.3",
+    "@types/node": "^26.1.1",
+    "jquery": "^3.7.1",
+    "jsdom": "^29.1.1",
+    "types-mediawiki": "^2.0",
+    "typescript": "^7.0"
+  }
+}

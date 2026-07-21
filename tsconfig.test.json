@@ -1,0 +1,15 @@
+{
+  /* Type-checks the test suite only. Tests are never emitted — Node runs the
+     .ts files directly via type stripping. */
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".",
+    "lib": ["ES2022", "DOM"],
+    "types": ["node"],
+    /* Node's type stripping cannot rewrite import paths, so tests import
+       each other with explicit .ts extensions. */
+    "allowImportingTsExtensions": true
+  },
+  "include": ["tests/**/*.ts"]
+}

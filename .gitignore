@@ -1,0 +1,5 @@
+node_modules/
+*.tsbuildinfo
+
+# Note: resources/js/*.js is build output but IS committed on purpose —
+# MediaWiki's ResourceLoader serves it directly from disk with no build step.
