@@ -86,7 +86,7 @@ This is a template with image links and captions below the slider for convenienc
 This template wraps the ImageSlider parser function.
 
 Parameters:
-* Image1 / Image2 (required): File titles (include the <code>File:</code> prefix)
+* Image1 / Image2 (required): File titles (include the `File:` prefix)
 * width (optional, pixels, default 900px)
 * orientation (vertical|horizontal, default vertical)
 * Caption1 / Caption2 (optional): Text shown beneath with a link to each file.
